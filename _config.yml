@@ -1,7 +1,7 @@
 title: Daniel Ruppert - Capstone Site
 description: Capstone Github Pages website.
-baseurl: "" 
-url: "https://danruppert-snhu.github.io"
+baseurl: "https://danruppert-snhu.github.io" 
+url: "https://danruppert-snhu.github.io/snhu-capstone"
 
 theme: minima
 
