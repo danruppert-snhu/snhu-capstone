@@ -1,0 +1,20 @@
+title: Daniel Ruppert - Capstone Site
+description: Capstone Github Pages website.
+baseurl: "" 
+url: "https://danruppert-snhu.github.io"
+
+theme: minima
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+markdown: kramdown
+
+exclude:
+  - README.md
+  - .github/
+  - .gitignore
+
+github:
+  is_project_page: false
