@@ -20,13 +20,13 @@ Before completing my enhancements, I performed a [code review walkthrough](code-
 
 The following enhancements are organized into the three primary competency areas of computer science:
 
-- ### 🛠 [Software Design & Engineering](enhancements/software-design.md)
+- ### 🛠 [Software Design & Engineering](enhancements/software-engineering/index.md)
   Focused on modularity, maintainability, session persistence, and code clarity.
 
-- ### 📊 [Algorithms & Data Structures](enhancements/algorithms.md)
+- ### 📊 [Algorithms & Data Structures](enhancements/software-engineering/index.md)
   Covered performance optimization, recurrence logic, LRU caching, and event sorting.
 
-- ### 🗄 [Databases](enhancements/databases.md)
+- ### 🗄 [Databases](enhancements/databases/index.md)
   Involved schema refactoring, SQL injection protection, referential integrity, and secure password storage.
 
 ---
