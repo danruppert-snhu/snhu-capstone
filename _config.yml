@@ -1,4 +1,4 @@
-title: SNHU Capstone
+title: Daniel Ruppert's CS-499 ePortfolio
 baseurl: "/snhu-capstone"
 url: "https://danruppert-snhu.github.io"
 
@@ -10,3 +10,18 @@ plugins:
   - jekyll-remote-theme
 
 markdown: kramdown
+
+nav:
+  - title: Home
+    url: /
+  - title: Self-Assessment
+    url: /self-assessment/
+  - title: Code Review
+    url: /code-review/
+  - title: Software Engineering
+    url: /enhancements/software-engineering
+  - title: Data Structures
+    url: /enhancements/data-structures
+  - title: Databases
+    url: /enhancements/databases
+
