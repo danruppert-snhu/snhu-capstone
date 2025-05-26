@@ -1,3 +1,14 @@
+<p align="center">
+  <a href="/index.md">Home</a> |
+  <a href="/code-review/index.md">Code Review</a> |
+  <a href="/enhancements/software-engineering/index.md">Software Engineering</a> |
+  <a href="/enhancements/data-structures-algorithms/index.md">Algorithms</a> |
+  <a href="/enhancements/databases/index.md">Databases</a> |
+  <a href="/artifacts/index.md">Artifacts</a> |
+  <a href="/self-assessment/index.md">Self-Assessment</a>
+</p>
+<hr>
+
 # Welcome to My Computer Science Capstone Portfolio
 
 Hi, I’m Daniel Ruppert — a passionate infrastructure architect and software developer with a strong background in cloud architecture, systems design, and full-stack development. This portfolio showcases the culmination of my work in Southern New Hampshire University’s Computer Science program, highlighting key enhancements made to a real-world Android application as part of my CS-499 capstone.

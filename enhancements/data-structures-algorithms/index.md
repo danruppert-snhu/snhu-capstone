@@ -3,6 +3,16 @@ layout: default
 title: Data Structures and Algorithms
 nav_order: 2
 ---
+<p align="center">
+  <a href="/index.md">Home</a> |
+  <a href="/code-review/index.md">Code Review</a> |
+  <a href="/enhancements/software-engineering/index.md">Software Engineering</a> |
+  <a href="/enhancements/data-structures-algorithms/index.md">Algorithms</a> |
+  <a href="/enhancements/databases/index.md">Databases</a> |
+  <a href="/artifacts/index.md">Artifacts</a> |
+  <a href="/self-assessment/index.md">Self-Assessment</a>
+</p>
+<hr>
 
 # Enhancement Two: Data Structures and Algorithms
 
