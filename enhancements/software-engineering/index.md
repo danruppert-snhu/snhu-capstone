@@ -1,4 +1,4 @@
----
+[index.md](..%2F..%2Fself-assessment%2Findex.md)---
 layout: default
 title: SNHU Capstone
 ---
