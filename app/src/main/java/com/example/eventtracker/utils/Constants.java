@@ -21,8 +21,9 @@ public class Constants {
      * Date/Time Formatting
      */
     public static final String TIME_FORMAT = "%02d:%02d %s";
-    public static final String EVENT_DATE_PATTERN = "MMMM d";
-    public static final String EVENT_TIMESTAMP_PATTERN = "MMM dd, hh:mm a";
+    public static final String EVENT_DATE_PATTERN = "MMMM d, yyyy";
+    public static final String EVENT_TIMESTAMP_PATTERN_CURRENT_YEAR = "MMM dd, hh:mm a";
+    public static final String EVENT_TIMESTAMP_PATTERN = "MMM dd yyyy, hh:mm a";
 
 
     /**

@@ -386,7 +386,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         LocalDateTime dateTime = Instant.ofEpochSecond(epochSeconds)
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.EVENT_TIMESTAMP_PATTERN);
+        int currentYear = LocalDateTime.now().getYear();
+        int eventYear = dateTime.getYear();
+        DateTimeFormatter formatter;
+        if (eventYear == currentYear) {
+            formatter = DateTimeFormatter.ofPattern(Constants.EVENT_TIMESTAMP_PATTERN_CURRENT_YEAR);
+        } else {
+            formatter = DateTimeFormatter.ofPattern(Constants.EVENT_TIMESTAMP_PATTERN);
+        }
         return dateTime.format(formatter);
     }
 

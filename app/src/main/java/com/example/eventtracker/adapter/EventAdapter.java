@@ -65,6 +65,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         String day = dateList.get(position);
         // Set the text to the day number
         holder.eventTextView.setText(day);
+        if (day.isEmpty()) {
+            holder.itemView.setEnabled(false);
+            holder.itemView.setClickable(false);
+            holder.itemView.setBackgroundColor(Color.TRANSPARENT);
+        }
 
         if (position == selectedPosition) {
             holder.itemView.setBackgroundColor(Color.LTGRAY);

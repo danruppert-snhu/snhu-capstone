@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.example.eventtracker.utils.Constants;
+import com.example.eventtracker.utils.ErrorUtils;
 
 public class EventListActivity extends AppCompatActivity {
 
@@ -106,21 +107,8 @@ public class EventListActivity extends AppCompatActivity {
 
         //CS-499 - Algorithms: Implement a priority queue to sort events by date.
         toggleEventViewButton = findViewById(R.id.toggle_event_view);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.EVENT_DATE_PATTERN);
-        toggleEventViewButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (!isChecked) {
-                toggleEventViewButton.setText("Upcoming Events");
-                toggleEventViewButton.setTextOff("Upcoming Events");
-                loadUpcomingEvents();
-                user.setViewingUpcomingEvents(true);
-            } else {
-                String dateText = "Events for " + selectedDate.format(formatter);
-                toggleEventViewButton.setTextOn(dateText);
-                toggleEventViewButton.setText(dateText);
-                loadSelectedDateEvents(selectedDate);
-                user.setViewingUpcomingEvents(false);
-            }
-        });
+        toggleEventViewButton.setChecked(!user.getViewingUpcomingEvents());
+        toggleEventViewButton.setOnCheckedChangeListener((buttonView, isChecked) -> handleEventListDisplay(toggleEventViewButton, isChecked));
 
         // Load and bind events for today by default
         ArrayList<EventListAdapter.EventData> eventList = (user.getViewingUpcomingEvents() ? dbHelper.getUpcomingEvents(user, Constants.MAX_EVENTS_TO_SHOW) : dbHelper.getEventsForDate(user, selectedDate));
@@ -135,6 +123,22 @@ public class EventListActivity extends AppCompatActivity {
         //CS-499 - Software engineering: Modularize lambda definitions for improved readability
         addEventButton.setOnClickListener(v -> launchAddEventIntent());
     }
+
+    private void handleEventListDisplay(ToggleButton button, boolean isChecked) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.EVENT_DATE_PATTERN);
+        String dateText = "Events for " + selectedDate.format(formatter);
+        user.setViewingUpcomingEvents(!isChecked);
+        if (!isChecked) {
+            button.setText("Upcoming Events");
+            button.setTextOff("Upcoming Events");
+            loadUpcomingEvents();
+        } else {
+            button.setTextOn(dateText);
+            button.setText(dateText);
+            loadSelectedDateEvents(selectedDate);
+        }
+    }
+
 
     //CS-499: Algorithms: Implement a priority queue to sort events by date.
     private void loadSelectedDateEvents(LocalDate selectedDate) {
@@ -252,8 +256,14 @@ public class EventListActivity extends AppCompatActivity {
      */
     private ArrayList<String> daysInMonthArray(LocalDate date) {
         ArrayList<String> daysInMonth = new ArrayList<>();
-        YearMonth yearMonth = YearMonth.of(date.getYear(), date.getMonthValue());
+        YearMonth yearMonth = YearMonth.from(date);
         int daysInMonthValue = yearMonth.lengthOfMonth();
+        LocalDate firstOfMonth = date.withDayOfMonth(1);
+        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue();
+        int startIndex = dayOfWeek % 7;
+        for (int i = 0; i < startIndex; i++) {
+            daysInMonth.add("");
+        }
 
         for (int day = 1; day <= daysInMonthValue; day++) {
             daysInMonth.add(String.valueOf(day));
@@ -315,6 +325,7 @@ public class EventListActivity extends AppCompatActivity {
             }
             eventListAdapter.setEventList(eventsForSelectedDate);
         }
+        handleEventListDisplay(toggleEventViewButton, toggleEventViewButton.isChecked());
     }
 
     //CS-499 - Algorithms: implement a priority queue
