@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.eventtracker'
+    namespace 'druppert.snhu.eventtracker'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.eventtracker"
+        applicationId "druppert.snhu.eventtracker"
         minSdk 34
         targetSdk 34
         versionCode 1
