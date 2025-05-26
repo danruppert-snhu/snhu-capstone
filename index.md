@@ -5,4 +5,6 @@ title: SNHU Capstone
 
 # Welcome to My SNHU Capstone
 
-This is the home page for my capstone project. More content coming soon.
+[Code review for CS-499 EventSync application](https://www.loom.com/share/98dd80747735403d9af7cd5edffce727)
+
+[EventSync application](https://github.com/danruppert-snhu/snhu-capstone)
