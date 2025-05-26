@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">EventSync</string>
+    <string-array name="recurrence_types">
+        <item>Day</item>
+        <item>Week</item>
+        <item>Month</item>
+        <item>Year</item>
+    </string-array>
+
+    <string-array name="recurrence_types_plural">
+        <item>Days</item>
+        <item>Weeks</item>
+        <item>Months</item>
+        <item>Years</item>
+    </string-array>
+
+</resources>

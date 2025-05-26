@@ -1,0 +1,34 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".activity.SMSNotificationActivity">
+
+    <!-- SMS Permission Status Text -->
+    <TextView
+        android:id="@+id/sms_permission_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SMS Permission Status: Unknown"
+        android:textSize="18sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <!-- Button to Request Permission or Send SMS -->
+    <Button
+        android:id="@+id/sms_request_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Request SMS Permission"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/sms_permission_status"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
