@@ -37,7 +37,7 @@ With years of experience in infrastructure design and technical consulting, I’
 
 - 🔗 [GitHub](https://github.com/danruppert-snhu)
 - 🔗 [LinkedIn](https://www.linkedin.com/in/daniel-ruppert/)
-- 📧 your.email@example.com
+- 📧 daniel.ruppert@snhu.edu
 
 ---
 
