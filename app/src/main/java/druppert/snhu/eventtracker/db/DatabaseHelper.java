@@ -25,12 +25,28 @@ import druppert.snhu.eventtracker.utils.DatabaseConstants;
 import druppert.snhu.eventtracker.utils.ErrorUtils;
 import druppert.snhu.eventtracker.utils.SecurityUtils;
 
+/**
+ * DatabaseHelper manages SQLite operations for EventSync.
+ *
+ * Support includes
+ * User authentication and persistence
+ * Event CRUD operations including recurring events
+ * Support for phone number storage and retrieval
+ * Data Definition Language (DDL) operations (table/index creation, upgrades)
+ * Input validation, security, and formatting helpers
+ */
+
 public class DatabaseHelper extends SQLiteOpenHelper {
-    //CS-499 - Software engineering:
+    //CS-499 - Software engineering
     private Context context;
 
-    //CS-499 - Databases:
-    //CS-499 - Software engineering:
+    //CS-499 - Databases & software engineering
+    /**
+     * Enum representing supported recurrence frequencies.
+     * Each entry has a unique database key and display label.
+     * Used for both UI display and database storage.
+     */
+
     public enum RecurrenceType {
         DAYS(1, "Day"),
         WEEKS(2, "Week"),
@@ -77,9 +93,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.context = context;
     }
 
+
     /**
-     * Called when the database is first created, or on upgrade.
-     * Creates the database schema
+     * Inserts a new user record into the database.
+     * CS-499
+     * @param db The SQLite database reference
+     * @return true if the insert was successful, false otherwise
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -89,11 +108,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         populateRecurrenceTypes(db);
     }
 
+
+    /**
+     * Execute DDL to handle initial database schema creation
+     */
     private void createTables(SQLiteDatabase db) {
         for (String query : DatabaseConstants.CREATE_TABLE_STATEMENTS) {
             db.execSQL(query);
         }
     }
+
+    //CS-499
+
+    /**
+     * Create indexes on required columns for data retrieval optimization
+     */
     private void createIndexes(SQLiteDatabase db) {
         for (String query : DatabaseConstants.CREATE_IDX_STATEMENTS) {
             db.execSQL(query);
@@ -101,6 +130,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //CS-499 - Databases
+
+    /**
+     * Initializes the recurrence types database table.
+     */
     private void populateRecurrenceTypes(SQLiteDatabase db) {
         for (RecurrenceType type : RecurrenceType.values()) {
             ContentValues values = new ContentValues();
@@ -111,7 +144,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * Handles database upgrades by dropping and recreating tables.
+     * CS-499
+     * Handles database upgrades when the version number increments.
+     * For the scope of this project, it is simply to recreate the database when changes occur by
+     * wiping all data then re-running the creation
+     *
+     * Removed magic strings by implementing constants
+     *
+     * @param db The SQLite database reference
+     * @param oldVersion The previous database version
+     * @param newVersion The new version
+     * @return the users id if credentials are valid, otherwise -1.
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -131,7 +174,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Inserts a new user record into the database.
-     * @return true if insert was successful, false otherwise.
+     * CS-499
+     * @param username The desired username
+     * @param passwordHash The securely hashed password
+     * @param salt The salt used in hashing
+     * @return true if the insert was successful, false otherwise
      */
     public boolean addUser(String username, String passwordHash, String salt) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -145,12 +192,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * Checks if a user with the given username already exists.
+     * Checks whether a user exists for a given username.
+     * CS-499
+     * @param username The username to lookup
+     * @return true if the user exists, false otherwise
      */
     public boolean checkUserExists(String username) {
         boolean userExists = false;
         SQLiteDatabase db = this.getReadableDatabase();
-        //CS-499: Using parameterized query to avoid SQL injection
+        //CS-499 Databases
         try (Cursor cursor = db.rawQuery(DatabaseConstants.USER_LOOKUP_ID_USERNAME_BY_USERNAME, new String[]{username})) {
             userExists = cursor.getCount() > 0;
         } finally {
@@ -160,7 +210,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * Validates password strength based on character types and minimum length.
+     * Checks whether a password meets minimum security criteria.
+     * CS-499
+     * @param password The plain text password to evaluate
+     * @return true if the password meets strength requirements, false otherwise
      */
     public boolean checkPasswordStrength(String password) {
         if (password == null || password.length() < DatabaseConstants.PASSWORD_LENGTH_REQUIREMENT) {
@@ -193,7 +246,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      *
      * @param username The user's login username.
      * @param password The user's login password.
-     * @return user_id if credentials are valid, otherwise -1.
+     * @return the users id if credentials are valid, otherwise -1.
      */
     public int authenticateUser(String username, String password) {
         int userId = -1; // Default to -1 (unauthenticated)
@@ -224,13 +277,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
     /**
-     * Adds an event to the database.
-     * //CS-499 - Databases
+     * CS-499 - Databases
+     * Adds a standalone event to the database
+     *
+     * @param user The user who owns the events.
+     * @param eventName The name or description of the recurring event.
+     * @param eventDate The date this event will take place
+     * @param eventTime The time of day the event occurs.
+     * @return The number of successfully inserted event rows.
      */
     public long addEvent(User user, String eventName, LocalDate eventDate, LocalTime eventTime) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        // CS-499: Add the user ID to associate the event with its owner
+        // CS-499 Databases
+        // Add the user ID to associate the event with its owner
         values.put(DatabaseConstants.COLUMN_USER_ID, user.getUserId());
         values.put(DatabaseConstants.COLUMN_EVENT_NAME, eventName);
 
@@ -337,7 +397,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * Advances the given date based on recurrence type and interval.
+     * Calculates the next date in the iteration using the given date based on recurrence type and interval.
      * CS-499 - Databases
      *
      * @param start The original start date.
@@ -361,6 +421,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //CS-499 - Databases
+
+    /**
+     * Calculates how many occurrences of an event there are between two dates using a given recurrence type and interval
+     */
     private int calculateOccurrences(LocalDateTime start, LocalDateTime end, RecurrenceType type, int interval) {
         if (start.isAfter(end)) return 0;
 
@@ -380,7 +444,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
     /**
-     * Converts an epoch timestamp to a user-friendly date-time string.
+     * Converts an epoch timestamp into a user-friendly date-time string
+     *
+     * If the event is in the current year, the year is omitted from the display.
+     *
+     * @param epochSeconds The timestamp to convert
+     * @return A formatted date string
      */
     public String formatEventTimestamp(long epochSeconds) {
         LocalDateTime dateTime = Instant.ofEpochSecond(epochSeconds)
@@ -398,8 +467,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * Retrieves a list of events for a given date.
-     * CS-499 - Databases
+     * Retrieves a sorted list of the user's next upcoming events.
+     * CS-499 Databases
+     *
+     * Retrieves events for a given date
+     *
+     * @param user The user whose events are queried
+     * @param date The date to lookup events for
+     * @return A list of upcoming events, ordered by time
      */
     public ArrayList<EventListAdapter.EventData> getEventsForDate(User user, LocalDate date) {
         ArrayList<EventListAdapter.EventData> events = new ArrayList<>();
@@ -438,8 +513,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Deletes an event from the database by its ID.
-     * //CS-499 - Databases
-     * //CS-499 - software engineering
+     * CS-499 - Databases and Software Engineering
+     *
+     * @param user The user to delete events for to prevent a user from deleting an event they don't own
+     * @param eventId The ID of the event to delete
+     * @return true if the event was deleted
      */
     public boolean deleteEvent(User user, long eventId) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -449,8 +527,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rowsDeleted > 0;
     }
 
-    //CS-499 - Databases
-    //CS-499 - Software engineering
+
+    /**
+     * Retrieves a users phone number from the database, if it exists.
+     *
+     * CS-499 - Databases and Software Engineering
+     *
+     * @param user The user to delete events for to prevent a user from deleting an event they don't own
+     * @return the user's phone number if found
+     */
     public String getPhoneNumber(User user) {
         SQLiteDatabase db = this.getReadableDatabase();
         int userId = user.getUserId();
@@ -472,7 +557,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * CS-499: Support phone number persistence
+     * CS-499 Databases & Software engineering: Support phone number persistence
      * Updates the user's phone number only if it is currently null or empty.
      * @param user The person object representing the user whose phone number will be updated.
      * @param newPhoneNumber The phone number to update.
@@ -507,9 +592,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return updated;
     }
 
-    //CS-499 - Databases
-    //CS-499 - software engineering
-    //CS-499 - algorithms
+    /**
+     * Deletes an entire recurring event series including its parent and all children.
+     * CS-499 - Databases, software engineering, algorithms
+     *
+     * @param parentId The ID of the parent event
+     * @return true if at least one row was deleted, false otherwise
+     */
+
     public boolean deleteEventSeries(long parentId) {
         SQLiteDatabase db = this.getWritableDatabase();
         int deleted = db.delete(DatabaseConstants.TABLE_EVENTS, DatabaseConstants.COLUMN_EVENT_PARENT + " = ? OR " + DatabaseConstants.COLUMN_EVENT_ID + " = ?", new String[]{
@@ -518,6 +608,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return deleted > 0;
     }
+
+    /**
+     * Retrieves a sorted list of the user's next upcoming events.
+     *
+     * Events are selected starting from the current timestamp and ordered chronologically.
+     *
+     * @param user The user whose events are queried
+     * @param limit The maximum number of events to return
+     * @return A list of upcoming events, ordered by time
+     */
 
     public ArrayList<EventListAdapter.EventData> getUpcomingEvents(User user, int limit) {
         ArrayList<EventListAdapter.EventData> upcomingEvents = new ArrayList<>();
@@ -544,6 +644,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
                 upcomingEvents.add(new EventListAdapter.EventData(user.getUserId(), eventName, formattedDate, eventId, eventEpoch, eventParentId, isParent));
             }
+            upcomingEvents.sort(Comparator.comparingLong(EventListAdapter.EventData::getEventEpoch));
         } catch (Exception e) {
             ErrorUtils.showAndLogError(context, "EventLookupErr", "Error looking up events. Please try again.", e);
         } finally {

@@ -25,6 +25,17 @@ import druppert.snhu.eventtracker.utils.Constants;
 import druppert.snhu.eventtracker.utils.ErrorUtils;
 import druppert.snhu.eventtracker.utils.PhoneUtils;
 
+
+/**
+ * SMSNotificationActivity allows users to manage SMS permissions and update their phone number.
+ *
+ * Features:
+ * Runtime permission checks and requests for SEND_SMS
+ * Saving and persisting user phone numbers
+ * Sending test SMS messages
+ * Displaying permission status dynamically
+ */
+
 public class SMSNotificationActivity extends AppCompatActivity {
 
     private TextView smsPermissionStatus;
@@ -36,9 +47,14 @@ public class SMSNotificationActivity extends AppCompatActivity {
     private User user;
 
     /**
-     * Activity for managing SMS notification permissions and sending a test SMS.
-     * Includes runtime permission handling.
+     *
+     * CS-499 finished SMS implementation
+     *
+     * Initializes the SMS Notification screen.
+     *
+     * Sets up UI elements, checks permission status, and pre-loads the user's phone number if available.
      */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,7 +89,7 @@ public class SMSNotificationActivity extends AppCompatActivity {
 
         // Handle button click: request permission or send SMS depending on current status
         //CS-499 - Software engineering: modularize lambdas for readability
-        smsRequestButton.setOnClickListener(v -> handleSMSButton());
+        smsRequestButton.setOnClickListener(v -> onSMSButtonClick());
         //CS-499 - Software engineering: modularize lambdas for readability
         savePhoneNumberButton.setOnClickListener(v -> {
             savePhoneNumber();
@@ -83,8 +99,15 @@ public class SMSNotificationActivity extends AppCompatActivity {
         });
     }
 
-    //CS-499 - Software engineering: modularize lambdas for readability
-    private void handleSMSButton() {
+
+    /**
+     * CS-499 - Software engineering: modularize lambdas for readability
+     * Determines the next action when the user clicks the SMS button:
+     * Requests permission if not yet granted
+     * Sends a test SMS if permission is already available
+     */
+
+    private void onSMSButtonClick() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
             // Ask for permission if not granted
@@ -96,7 +119,7 @@ public class SMSNotificationActivity extends AppCompatActivity {
     }
 
     /**
-     * Inflate the menu.
+     * Inflates the options menu.
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -106,7 +129,7 @@ public class SMSNotificationActivity extends AppCompatActivity {
     }
 
     /**
-     * Handle menu item click (redirects back to the Event List screen).
+     * Handle menu item (calendar icon) click by redirecting back to the Event List screen.
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -147,7 +170,9 @@ public class SMSNotificationActivity extends AppCompatActivity {
     }
 
     /**
-     * Callback after the user responds to the permission request.
+     * Callback for handling the result of the SEND_SMS permission request.
+     * Updates the UI based on the user's response.
+     *
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -165,6 +190,11 @@ public class SMSNotificationActivity extends AppCompatActivity {
 
     /**
      * CS-499 - Software engineering: modularize lambdas for readability
+     * Saves and validates the user's phone number.
+     *
+     * Normalizes the number, checks formatting, and updates the database if valid.
+     *
+     * @return true if the number was saved successfully, false otherwise
      */
     private boolean savePhoneNumber() {
         String rawPhone = phoneNumberInput.getText().toString().trim();
@@ -194,8 +224,13 @@ public class SMSNotificationActivity extends AppCompatActivity {
     }
 
     /**
-     * Sends an SMS message to a phone number entered by the user.
+     * CS-499
+     * Sends a test SMS to the user's saved phone number.
+     *
+     * Validates and saves the phone number if necessary before sending.
+     * Displays confirmation or error message based on result.
      */
+
     private void sendSMS() {
         boolean phoneNumberValid = savePhoneNumber();
 

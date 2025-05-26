@@ -19,10 +19,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * EventListAdapter binds event data to list items in a RecyclerView.
+ *
+ * Supports deletion of both single and recurring events via dialog logic
+ * Provides runtime visibility toggling for action buttons (UX enhancement)
+ * Implements modular click handlers for readability and maintainability
+ */
 public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.EventListViewHolder> {
 
     /**
-     * Represents the structure of a single event row.
+     * EventData holds metadata for each event row.
+     * Supports recurrence via parent ID mapping and toggleable flags.
+     *
+     * CS-499
      */
     public static class EventData {
         String eventName;
@@ -62,8 +72,7 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
     private User user;
 
     /**
-     * Constructor for initializing the adapter with data and DB reference.
-     * CS-499 - Software engineering: Support user-specific features, recurring events
+     * Initializes adapter with user context, event list, and database reference.
      */
     public EventListAdapter(User user, ArrayList<EventData> eventList, DatabaseHelper dbHelper) {
         this.user = user;
@@ -72,7 +81,7 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
     }
 
     /**
-     * Updates the event list and refreshes the RecyclerView.
+     * Replaces the current list of events and refreshes the UI.
      */
     public void setEventList(ArrayList<EventData> eventList) {
         this.eventList = eventList;
@@ -168,8 +177,12 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
         }
     }
 
-    // CS-499 - software engineering: Support recurring events
-    // CS-499 - Algorithms: support recurring events
+
+    /**
+     * Deletes all events in a recurring series by matching the parent ID.
+     * CS-499 - software engineering: Support recurring events
+     * CS-499 - Algorithms: support recurring events
+     */
     private void deleteSeries(EventData eventData, View view, int eventPosition) {
         long parentId = eventData.isParent ? eventData.eventId : eventData.eventParentId;
         boolean deleted = dbHelper.deleteEventSeries(parentId);

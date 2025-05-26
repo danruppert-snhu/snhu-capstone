@@ -32,10 +32,14 @@ import java.util.Map;
 
 import druppert.snhu.eventtracker.utils.Constants;
 
+/**
+ * EventListActivity handles the calendar and list views for a user's events.
+ */
 public class EventListActivity extends AppCompatActivity {
 
-    //CS-499 - Algorithms: LRU cache implementation. Reduces database queries and consequently reduces slow disk I/O requests
-    //CS-499 - Algorithms: Oldest events will be pushed out of the cache.
+    //CS-499 - Algorithms
+    //LRU cache implementation. Reduces database queries and consequently reduces slow disk I/O requests
+    //Oldest events will be pushed out of the cache.
     private final LinkedHashMap<Integer, ArrayList<EventListAdapter.EventData>> eventCache =
             new LinkedHashMap<Integer, ArrayList<EventListAdapter.EventData>>(Constants.MAX_CACHE_SIZE, Constants.EVENT_CACHE_LOAD_FACTOR, true) {
                 @Override
@@ -104,7 +108,7 @@ public class EventListActivity extends AppCompatActivity {
         selectedDate = LocalDate.now();
         setMonthView();
 
-        //CS-499 - Algorithms: Implement a priority queue to sort events by date.
+        //CS-499 - Algorithms
         toggleEventViewButton = findViewById(R.id.toggle_event_view);
         toggleEventViewButton.setChecked(!user.getViewingUpcomingEvents());
         toggleEventViewButton.setOnCheckedChangeListener((buttonView, isChecked) -> handleEventListDisplay(toggleEventViewButton, isChecked));
@@ -113,13 +117,15 @@ public class EventListActivity extends AppCompatActivity {
         ArrayList<EventListAdapter.EventData> eventList = (user.getViewingUpcomingEvents() ? dbHelper.getUpcomingEvents(user, Constants.MAX_EVENTS_TO_SHOW) : dbHelper.getEventsForDate(user, selectedDate));
 
 
-        //CS-499 - Software Engineering: persist user session across intents / method invocations
+        //CS-499 - Software Engineering
+        // persist user session across intents / method invocations
         eventListAdapter = new EventListAdapter(user, eventList, dbHelper);
         eventListRecyclerView.setAdapter(eventListAdapter);
 
         // Set up the Add Event button to open the AddEventActivity screen
         addEventButton = findViewById(R.id.add_event_button);
-        //CS-499 - Software engineering: Modularize lambda definitions for improved readability
+        //CS-499 - Software engineering
+        // Modularize lambda definitions for improved readability
         addEventButton.setOnClickListener(v -> launchAddEventIntent());
     }
 
@@ -128,10 +134,12 @@ public class EventListActivity extends AppCompatActivity {
         String dateText = "Events for " + selectedDate.format(formatter);
         user.setViewingUpcomingEvents(!isChecked);
         if (!isChecked) {
+            // Toggle to upcoming events mode
             button.setText("Upcoming Events");
             button.setTextOff("Upcoming Events");
             loadUpcomingEvents();
         } else {
+            // Toggle to selected date mode
             button.setTextOn(dateText);
             button.setText(dateText);
             loadSelectedDateEvents(selectedDate);
@@ -139,7 +147,10 @@ public class EventListActivity extends AppCompatActivity {
     }
 
 
-    //CS-499: Algorithms: Implement a priority queue to sort events by date.
+    //CS-499: Algorithms
+    /**
+     * Loads events for the currently selected date and refreshes the adapter.
+     */
     private void loadSelectedDateEvents(LocalDate selectedDate) {
         ArrayList<EventListAdapter.EventData> events = dbHelper.getEventsForDate(user, selectedDate);
         eventListAdapter.setEventList(events);
@@ -147,7 +158,11 @@ public class EventListActivity extends AppCompatActivity {
         eventListRecyclerView.scrollToPosition(0);
     }
 
-    //CS-499: Algorithms: Implement a priority queue to sort events by date.
+    //CS-499: Algorithms
+    /**
+     * Loads the next N upcoming events
+     */
+
     private void loadUpcomingEvents() {
         ArrayList<EventListAdapter.EventData> upcoming = dbHelper.getUpcomingEvents(user, Constants.MAX_EVENTS_TO_SHOW);
         eventListAdapter.setEventList(upcoming);
@@ -185,7 +200,8 @@ public class EventListActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    //CS-499 - Software engineering: Modularize lambda invocations for human readability.
+    //CS-499 - Software engineering
+    // Modularize lambda invocations for human readability.
     private void launchAddEventIntent() {
         Intent intent = new Intent(EventListActivity.this, AddEventActivity.class);
         intent.putExtra(Constants.USER_INTENT_KEY, user);
@@ -313,7 +329,9 @@ public class EventListActivity extends AppCompatActivity {
      */
     private void onDaySelected(String day) {
         selectedDate = LocalDate.of(selectedMonthYearDate.getYear(), selectedMonthYearDate.getMonth(), Integer.parseInt(day));
-        //CS-499 - Algorithms: implement a priority queue
+        //CS-499 - Algorithms
+        // If viewing upcoming events, skip cache logic
+        // Otherwise, try to load events from the LRU cache (or DB if cache miss)
         if (toggleEventViewButton.isChecked()) {
             int epochDay = getEpochDay(selectedDate);
             ArrayList<EventListAdapter.EventData> eventsForSelectedDate = eventCache.get(epochDay);
@@ -328,7 +346,7 @@ public class EventListActivity extends AppCompatActivity {
         handleEventListDisplay(toggleEventViewButton, toggleEventViewButton.isChecked());
     }
 
-    //CS-499 - Algorithms: implement a priority queue
+    // Convert the selected date into an integer key for LRU cache
     private int getEpochDay(LocalDate date) {
         return (int) date.toEpochDay();  // Suitable for SparseArray keys
     }

@@ -41,12 +41,14 @@ public class LoginActivity extends AppCompatActivity {
         //Bind login button to a function to handle the authentication
         loginButton.setOnClickListener(v -> loginUser());
         //Bind a function to the register button to load the registration form
-        //CS-499 - Software engineering: modularize lambda functions for readability.
+        //CS-499 - Software engineering
+        // modularize lambda functions for readability.
         registerText.setOnClickListener(v -> showRegistration());
     }
 
 
-    //CS-499 - Software engineering: modularize lambda functions for readability.
+    //CS-499 - Software engineering
+    // modularize lambda functions for readability.
     private void showRegistration() {
         Intent intent = new Intent(LoginActivity.this, RegistrationActivity.class);
         startActivity(intent);
@@ -71,7 +73,8 @@ public class LoginActivity extends AppCompatActivity {
         boolean isUserValid = userId != -1;
         if (isUserValid) {
             //Instantiate the Person object to represent this user.
-            //CS-499 - Software engineering: persist user data across intents for user-specific management.
+            //CS-499 - Software engineering
+            // persist user data across intents for user-specific management.
             User user = new User(userId, username);
 
             //Storing as a variable in this class in the event we need it for future functionality.

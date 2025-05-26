@@ -14,6 +14,13 @@ import druppert.snhu.eventtracker.entity.User;
 
 import java.util.ArrayList;
 
+/**
+ * EventAdapter populates calendar grid cells with selectable day numbers.
+ *
+ * Implements modular view selection and highlighting
+ * Supports interaction callbacks using listener interface
+ * Modularized lambdas for readability and testability
+ */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
     private ArrayList<String> dateList;
@@ -22,14 +29,15 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private int selectedPosition = RecyclerView.NO_POSITION;
     private User user;
 
-
+    // Private default constructor to enforce custom initialization
     private EventAdapter() {}
 
     /**
      * Constructs an EventAdapter with a list of days and a listener for selection.
      *
-     * @param dateList - list of dates to present in the calendar
-     * @param listener - listener function to invoke when the calendar item is clicked.
+     * @param user     The active user
+     * @param dateList List of day labels to display in the calendar
+     * @param listener Listener to handle callbacks on date selection
      */
     public EventAdapter(User user, ArrayList<String> dateList, OnDaySelectedListener listener) {
         this.user = user;
@@ -38,7 +46,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     /**
-     * Updates the currently selected calendar day and refreshes the visual state.
+     * Updates the highlighted day in the grid and refreshes the visual state.
+     *
+     * @param position Index of the newly selected day
      */
     public void setSelectedPosition(int position) {
         int previousPosition = selectedPosition;
@@ -65,12 +75,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         String day = dateList.get(position);
         // Set the text to the day number
         holder.eventTextView.setText(day);
+        // Disable interaction for padding cells
         if (day.isEmpty()) {
             holder.itemView.setEnabled(false);
             holder.itemView.setClickable(false);
             holder.itemView.setBackgroundColor(Color.TRANSPARENT);
         }
 
+        // Highlight selected day
         if (position == selectedPosition) {
             holder.itemView.setBackgroundColor(Color.LTGRAY);
         } else {
