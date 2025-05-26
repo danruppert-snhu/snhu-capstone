@@ -222,19 +222,20 @@ public class EventListActivity extends AppCompatActivity {
         // Bind calendar data to the adapter and highlight the selected date
         eventAdapter = new EventAdapter(user, dateList, this::onDaySelected);
         calendarRecyclerView.setAdapter(eventAdapter);
+        int firstDayOfWeek = YearMonth.from(selectedMonthYearDate).atDay(1).getDayOfWeek().getValue();
+        int offset = (firstDayOfWeek % 7); // Adjust Sunday to be 0
+
         if (!isFirstLoad) {
-            // If a date was previously selected, re-select it if it belongs to the current month
             if (selectedDate.getMonth() == selectedMonthYearDate.getMonth() &&
                     selectedDate.getYear() == selectedMonthYearDate.getYear()) {
-                int selectedPosition = selectedDate.getDayOfMonth() - 1;
+                int selectedPosition = selectedDate.getDayOfMonth() - 1 + offset;
                 eventAdapter.setSelectedPosition(selectedPosition);
             }
         } else {
-            // On first load, highlight today's date if it's within the selected month
             LocalDate today = LocalDate.now();
             int todayPosition = -1;
             if (today.getMonth() == selectedMonthYearDate.getMonth() && today.getYear() == selectedMonthYearDate.getYear()) {
-                todayPosition = today.getDayOfMonth() - 1;
+                todayPosition = today.getDayOfMonth() - 1 + offset;
             }
             if (todayPosition >= 0) {
                 eventAdapter.setSelectedPosition(todayPosition);
