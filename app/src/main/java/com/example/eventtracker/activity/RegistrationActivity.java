@@ -101,10 +101,12 @@ public class RegistrationActivity extends AppCompatActivity {
                 finish();
             } else {
                 // Registration attempt failed, notify user
-                Toast.makeText(this, "Internal error with registration!", Toast.LENGTH_SHORT).show();
+                //CS-499 - Software Engineering: Improved logging and error handling.
+                ErrorUtils.showAndLogError(this, "RegistrationError", "Internal error with registration!", new Exception("Internal error with registration!"));
             }
         } catch (Exception e) {
             // Catch and log any unexpected exceptions during registration
+            //CS-499 - Software Engineering: Improved logging and error handling.
             ErrorUtils.showAndLogError(this, "RegistrationError", "Registration failed. Please try again.", e);
             Toast.makeText(this, "Error registering user", Toast.LENGTH_SHORT).show();
         }

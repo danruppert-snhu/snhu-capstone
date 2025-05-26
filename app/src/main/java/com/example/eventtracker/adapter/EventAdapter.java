@@ -74,9 +74,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
 
         // Set up the click listener to update selection and notify parent
+        // CS-499 - Software engineering: modularize lambdas for readability
         holder.itemView.setOnClickListener(v -> handleDaySelection(holder, day));
     }
 
+    // CS-499 - Software engineering: modularize lambdas for readability
     private void handleDaySelection(EventViewHolder holder, String day) {
         setSelectedPosition(holder.getAdapterPosition());
         listener.onDaySelected(day);

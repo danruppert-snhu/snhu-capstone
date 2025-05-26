@@ -44,19 +44,22 @@ public class SMSNotificationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sms_notification);
 
+        //CS-499 - Software Engineering: persist user
         user = getIntent().getSerializableExtra("user", User.class);
 
         // Initialize UI components
         smsPermissionStatus = findViewById(R.id.sms_permission_status);
         smsRequestButton = findViewById(R.id.sms_request_button);
+        //CS-499 - Software Engineering: complete SMS implementation
         savePhoneNumberButton = findViewById(R.id.save_phone_number_button);
 
-        //CS-499: Finalize phone number input for SMS support
+        //CS-499 - Software Engineering:  Finalize phone number input for SMS support
         phoneNumberInput = findViewById(R.id.phone_number_input);
         dbHelper = new DatabaseHelper(this);
 
 
         String phoneNumber = user.getPhoneNumber();
+        //CS-499 - Databases and Software engineering: handle user-specific phone number persistence.
         if (phoneNumber == null || phoneNumber.isEmpty()) {
             phoneNumber = dbHelper.getPhoneNumber(user);
         }
@@ -69,13 +72,18 @@ public class SMSNotificationActivity extends AppCompatActivity {
         checkAndDisplaySMSPermissionStatus();
 
         // Handle button click: request permission or send SMS depending on current status
+        //CS-499 - Software engineering: modularize lambdas for readability
         smsRequestButton.setOnClickListener(v -> handleSMSButton());
+        //CS-499 - Software engineering: modularize lambdas for readability
         savePhoneNumberButton.setOnClickListener(v -> {
             savePhoneNumber();
+            //CS-499 - Software engineering: modularize lambdas for readability
+            //Only show the phone number saved notification when the save button is pressed, even though we save it when users send or press save
             Toast.makeText(this, "Phone number saved.", Toast.LENGTH_SHORT).show();
         });
     }
 
+    //CS-499 - Software engineering: modularize lambdas for readability
     private void handleSMSButton() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -155,6 +163,9 @@ public class SMSNotificationActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * CS-499 - Software engineering: modularize lambdas for readability
+     */
     private boolean savePhoneNumber() {
         String rawPhone = phoneNumberInput.getText().toString().trim();
         String phoneNumber = PhoneUtils.normalizePhoneNumber(rawPhone);

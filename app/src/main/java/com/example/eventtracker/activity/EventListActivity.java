@@ -34,13 +34,17 @@ import java.util.Map;
 
 public class EventListActivity extends AppCompatActivity {
 
+    //CS-499 - Algorithms: Least-Recently-Used (LRU) cache size, limit to a maximum of 50 events.
     private static final int MAX_CACHE_SIZE = 50;
+    //CS-499 - Algorithms: Maximum number of events to show on the event list (both upcoming and selected date lists)
     private static final int MAX_EVENTS_TO_SHOW = 50;
 
+    //CS-499 - Algorithms: LRU cache implementation. Reduces database queries and consequently reduces slow disk I/O requests
+    //CS-499 - Algorithms: Oldest events will be pushed out of the cache.
     private final LinkedHashMap<Integer, ArrayList<EventListAdapter.EventData>> eventCache =
             new LinkedHashMap<Integer, ArrayList<EventListAdapter.EventData>>(MAX_CACHE_SIZE, 0.75f, true) {
                 @Override
-                protected boolean removeEldestEntry(Map.Entry<Integer, ArrayList<EventListAdapter.EventData>> eldest) {
+                protected boolean removeEldestEntry(Map.Entry<Integer, ArrayList<EventListAdapter.EventData>> oldest) {
                     return size() > MAX_CACHE_SIZE;
                 }
             };
@@ -74,6 +78,7 @@ public class EventListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_event_list);
         // Initialize database helper to query event data
         dbHelper = new DatabaseHelper(this);
+        //CS-499 - Software Engineering: Persist user data across intents
         user = getIntent().getSerializableExtra("user", User.class);
 
 
@@ -104,6 +109,7 @@ public class EventListActivity extends AppCompatActivity {
         selectedDate = LocalDate.now();
         setMonthView();
 
+        //CS-499 - Algorithms: Implement a priority queue to sort events by date.
         toggleEventViewButton = findViewById(R.id.toggle_event_view);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM d");
         toggleEventViewButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -125,20 +131,24 @@ public class EventListActivity extends AppCompatActivity {
         ArrayList<EventListAdapter.EventData> eventList = (user.getViewingUpcomingEvents() ? dbHelper.getUpcomingEvents(user, MAX_EVENTS_TO_SHOW) : dbHelper.getEventsForDate(user, selectedDate));
 
 
+        //CS-499 - Software Engineering: persist user session across intents / method invocations
         eventListAdapter = new EventListAdapter(user, eventList, dbHelper);
         eventListRecyclerView.setAdapter(eventListAdapter);
 
         // Set up the Add Event button to open the AddEventActivity screen
         addEventButton = findViewById(R.id.add_event_button);
+        //CS-499 - Software engineering: Modularize lambda definitions for improved readability
         addEventButton.setOnClickListener(v -> launchAddEventIntent());
     }
 
+    //CS-499: Algorithms: Implement a priority queue to sort events by date.
     private void loadSelectedDateEvents(LocalDate selectedDate) {
         ArrayList<EventListAdapter.EventData> events = dbHelper.getEventsForDate(user, selectedDate);
         eventListAdapter.setEventList(events);
         eventListRecyclerView.scrollToPosition(0);
     }
 
+    //CS-499: Algorithms: Implement a priority queue to sort events by date.
     private void loadUpcomingEvents() {
         ArrayList<EventListAdapter.EventData> upcoming = dbHelper.getUpcomingEvents(user, MAX_EVENTS_TO_SHOW);
         eventListAdapter.setEventList(upcoming);
@@ -174,7 +184,7 @@ public class EventListActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
+    //CS-499 - Software engineering: Modularize lambda invocations for human readability.
     private void launchAddEventIntent() {
         Intent intent = new Intent(EventListActivity.this, AddEventActivity.class);
         intent.putExtra("user", user);
@@ -296,7 +306,7 @@ public class EventListActivity extends AppCompatActivity {
      */
     private void onDaySelected(String day) {
         selectedDate = LocalDate.of(selectedMonthYearDate.getYear(), selectedMonthYearDate.getMonth(), Integer.parseInt(day));
-
+        //CS-499 - Algorithms: implement a priority queue
         if (toggleEventViewButton.isChecked()) {
             int epochDay = getEpochDay(selectedDate);
             ArrayList<EventListAdapter.EventData> eventsForSelectedDate = eventCache.get(epochDay);
@@ -310,6 +320,7 @@ public class EventListActivity extends AppCompatActivity {
         }
     }
 
+    //CS-499 - Algorithms: implement a priority queue
     private int getEpochDay(LocalDate date) {
         return (int) date.toEpochDay();  // Suitable for SparseArray keys
     }

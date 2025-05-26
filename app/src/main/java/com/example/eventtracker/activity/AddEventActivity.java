@@ -63,6 +63,7 @@ public class AddEventActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_event);
 
+        //CS-499: User persistence across a session for various user-driven and user-specific interactions.
         user = getIntent().getSerializableExtra("user", User.class);
 
         // Initialize database helper
@@ -90,22 +91,26 @@ public class AddEventActivity extends AppCompatActivity {
 
         // Trigger event saving when Save button is clicked
         saveEventButton.setOnClickListener(v -> saveEvent());
+
+        //CS-499: When the "repeat event" checkbox is selected, show the options to create a recurring event.
         repeatCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             recurrenceOptions.setVisibility(isChecked ? View.VISIBLE : View.GONE);
             repeatUntil.setVisibility(isChecked ? View.VISIBLE : View.GONE);
         });
+
+        //CS-499: Only allow users to repeat events at most every 999 <intervals>, i.e 999 days
         intervalText.setFilters(new InputFilter[]{
                 new InputFilterMinMax(1, 999)
         });
 
 
-        // Load singular by default
+        //CS-499: Load singular recurrence spinner list by default
         recurrenceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
                 getResources().getStringArray(R.array.recurrence_types));
         recurrenceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         recurrenceTypeSpinner.setAdapter(recurrenceAdapter);
 
-        // Watch interval for changes
+        //CS-499: Watch interval for changes, swap spinner list if needed.
         intervalText.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
@@ -124,6 +129,11 @@ public class AddEventActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * CS-499: Adding support for recurring events.
+     * Update recurrence spinner's text to reflect singular or plurality as needed.
+     * @param usePlural
+     */
     private void updateRecurrenceSpinnerOptions(boolean usePlural) {
         int currentPosition = recurrenceTypeSpinner.getSelectedItemPosition();
 
@@ -143,6 +153,7 @@ public class AddEventActivity extends AppCompatActivity {
      */
     private void saveEvent() {
         // Validate that all required inputs are provided
+        //CS-499: adding support for recurring events. Event date and time refactoring to support change
         if (eventStartDate == null || eventTime == null || eventNameInput.getText().toString().isEmpty()) {
             Toast.makeText(this, "Please enter an event name and select both date and time", Toast.LENGTH_SHORT).show();
             return;
@@ -151,17 +162,41 @@ public class AddEventActivity extends AppCompatActivity {
         // Gather user input
         String eventName = eventNameInput.getText().toString();
         long result = -1;
+        //CS-499: Support both singular and repeating event scheduling
         if (!repeatCheckbox.isChecked()) {
             //Fetch the user who this event is being created / updated for.
             // Persist the event to the database
             result = dbHelper.addEvent(user, eventName, eventStartDate, eventTime);
         } else {
-            int interval = Integer.parseInt(intervalText.getText().toString());
+            //CS-499: If the event is a repeating event, additional fields are required.
+            //CS-499: Add input validation for new event creation path.
+            // Check interval is not null
+            String intervalInput = intervalText.getText().toString().trim();
+            if (intervalInput.isEmpty()) {
+                Toast.makeText(this, "Please enter a recurrence interval.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int interval;
+            try {
+                interval = Integer.parseInt(intervalInput);
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Interval must be a valid number.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Validate recurrence type selection
             String recurrenceTypeSelected = recurrenceTypeSpinner.getSelectedItem().toString();
             if (recurrenceTypeSelected.endsWith("s") && recurrenceTypeSelected.length() > 3) {
                 recurrenceTypeSelected = recurrenceTypeSelected.substring(0, recurrenceTypeSelected.length() - 1);
             }
+
+            //CS-499: Fetch recurrence type (days, weeks, months, years).
             DatabaseHelper.RecurrenceType recurrenceType = DatabaseHelper.RecurrenceType.fromDbValue(recurrenceTypeSelected);
+            if (recurrenceType == null) {
+                Toast.makeText(this, "Please select a valid recurrence type.", Toast.LENGTH_SHORT).show();
+                return;
+            }
             result = dbHelper.addRecurringEvent(user, recurrenceType,  interval,  eventName,  eventStartDate,  eventTime,  eventEndDate);
         }
         if (result != -1) {
@@ -179,6 +214,8 @@ public class AddEventActivity extends AppCompatActivity {
 
     /**
      * Displays a calendar picker dialog for selecting the event date.
+     * CS-499: Added support for recurring events
+     * CS-499: Refactored method to be reusable instead of hard-linkages with a single button and date/times
      */
     private void showDatePickerDialog(TextView textView, Consumer<LocalDate> date) {
         //When the "Date" text field is clicked, this displays a calendar for the user to select a day of the year.
@@ -202,6 +239,8 @@ public class AddEventActivity extends AppCompatActivity {
 
     /**
      * Displays a time picker dialog for selecting the event time.
+     * CS-499: Added support for recurring events
+     * CS-499: Refactored method to be reusable instead of hard-linkages with a single button and date/times
      */
     private void showTimePickerDialog(TextView textView, Consumer<LocalTime> time) {
         Calendar calendar = Calendar.getInstance();

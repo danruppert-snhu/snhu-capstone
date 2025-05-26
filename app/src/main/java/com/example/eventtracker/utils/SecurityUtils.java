@@ -12,7 +12,7 @@ public class SecurityUtils {
 
     private static final int SALT_LENGTH = 16;
 
-    //CS-499 - Increase PPBKDF2 iteration count from 65k to 100k
+    //CS-499 - software engineering: Increase PPBKDF2 iteration count from 65k to 100k
     private static final int HASH_ITERATIONS = 100000;
     private static final int KEY_LENGTH = 128;
     /**
