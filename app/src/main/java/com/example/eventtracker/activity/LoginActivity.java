@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.eventtracker.R;
 import com.example.eventtracker.db.DatabaseHelper;
 import com.example.eventtracker.entity.User;
+import com.example.eventtracker.utils.Constants;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -78,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
 
             //Redirect the user to the home screen (post-login) if authentication is successful
             Intent intent = new Intent(LoginActivity.this, EventListActivity.class);
-            intent.putExtra("user", user);
+            intent.putExtra(Constants.USER_INTENT_KEY, user);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();

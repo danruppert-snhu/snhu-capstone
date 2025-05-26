@@ -2,7 +2,6 @@ package com.example.eventtracker.activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,23 +28,19 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-public class EventListActivity extends AppCompatActivity {
+import com.example.eventtracker.utils.Constants;
 
-    //CS-499 - Algorithms: Least-Recently-Used (LRU) cache size, limit to a maximum of 50 events.
-    private static final int MAX_CACHE_SIZE = 50;
-    //CS-499 - Algorithms: Maximum number of events to show on the event list (both upcoming and selected date lists)
-    private static final int MAX_EVENTS_TO_SHOW = 50;
+public class EventListActivity extends AppCompatActivity {
 
     //CS-499 - Algorithms: LRU cache implementation. Reduces database queries and consequently reduces slow disk I/O requests
     //CS-499 - Algorithms: Oldest events will be pushed out of the cache.
     private final LinkedHashMap<Integer, ArrayList<EventListAdapter.EventData>> eventCache =
-            new LinkedHashMap<Integer, ArrayList<EventListAdapter.EventData>>(MAX_CACHE_SIZE, 0.75f, true) {
+            new LinkedHashMap<Integer, ArrayList<EventListAdapter.EventData>>(Constants.MAX_CACHE_SIZE, Constants.EVENT_CACHE_LOAD_FACTOR, true) {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<Integer, ArrayList<EventListAdapter.EventData>> oldest) {
-                    return size() > MAX_CACHE_SIZE;
+                    return size() > Constants.MAX_CACHE_SIZE;
                 }
             };
 
@@ -79,7 +74,7 @@ public class EventListActivity extends AppCompatActivity {
         // Initialize database helper to query event data
         dbHelper = new DatabaseHelper(this);
         //CS-499 - Software Engineering: Persist user data across intents
-        user = getIntent().getSerializableExtra("user", User.class);
+        user = getIntent().getSerializableExtra(Constants.USER_INTENT_KEY, User.class);
 
 
         //Get the calendar header text field (non-editable)
@@ -96,7 +91,7 @@ public class EventListActivity extends AppCompatActivity {
 
         // Set up the calendar view as a grid (7 columns for days of the week)
         calendarRecyclerView = findViewById(R.id.calendar_recycler_view);
-        calendarRecyclerView.setLayoutManager(new GridLayoutManager(this, 7));
+        calendarRecyclerView.setLayoutManager(new GridLayoutManager(this, Constants.DAYS_IN_WEEK));
 
         // Set up the event list view as a vertical list (one item per event)
         eventListRecyclerView = findViewById(R.id.event_list_recycler);
@@ -111,7 +106,7 @@ public class EventListActivity extends AppCompatActivity {
 
         //CS-499 - Algorithms: Implement a priority queue to sort events by date.
         toggleEventViewButton = findViewById(R.id.toggle_event_view);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM d");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.EVENT_DATE_PATTERN);
         toggleEventViewButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!isChecked) {
                 toggleEventViewButton.setText("Upcoming Events");
@@ -128,7 +123,7 @@ public class EventListActivity extends AppCompatActivity {
         });
 
         // Load and bind events for today by default
-        ArrayList<EventListAdapter.EventData> eventList = (user.getViewingUpcomingEvents() ? dbHelper.getUpcomingEvents(user, MAX_EVENTS_TO_SHOW) : dbHelper.getEventsForDate(user, selectedDate));
+        ArrayList<EventListAdapter.EventData> eventList = (user.getViewingUpcomingEvents() ? dbHelper.getUpcomingEvents(user, Constants.MAX_EVENTS_TO_SHOW) : dbHelper.getEventsForDate(user, selectedDate));
 
 
         //CS-499 - Software Engineering: persist user session across intents / method invocations
@@ -145,13 +140,15 @@ public class EventListActivity extends AppCompatActivity {
     private void loadSelectedDateEvents(LocalDate selectedDate) {
         ArrayList<EventListAdapter.EventData> events = dbHelper.getEventsForDate(user, selectedDate);
         eventListAdapter.setEventList(events);
+        //Reset scroll position to top of list.
         eventListRecyclerView.scrollToPosition(0);
     }
 
     //CS-499: Algorithms: Implement a priority queue to sort events by date.
     private void loadUpcomingEvents() {
-        ArrayList<EventListAdapter.EventData> upcoming = dbHelper.getUpcomingEvents(user, MAX_EVENTS_TO_SHOW);
+        ArrayList<EventListAdapter.EventData> upcoming = dbHelper.getUpcomingEvents(user, Constants.MAX_EVENTS_TO_SHOW);
         eventListAdapter.setEventList(upcoming);
+        //Reset scroll position to top of list.
         eventListRecyclerView.scrollToPosition(0);
     }
 
@@ -178,16 +175,17 @@ public class EventListActivity extends AppCompatActivity {
 
 
             Intent intent = new Intent(EventListActivity.this, SMSNotificationActivity.class);
-            intent.putExtra("user", user);
+            intent.putExtra(Constants.USER_INTENT_KEY, user);
             startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
     //CS-499 - Software engineering: Modularize lambda invocations for human readability.
     private void launchAddEventIntent() {
         Intent intent = new Intent(EventListActivity.this, AddEventActivity.class);
-        intent.putExtra("user", user);
+        intent.putExtra(Constants.USER_INTENT_KEY, user);
         startActivity(intent);
     }
 
@@ -221,7 +219,14 @@ public class EventListActivity extends AppCompatActivity {
         // Bind calendar data to the adapter and highlight the selected date
         eventAdapter = new EventAdapter(user, dateList, this::onDaySelected);
         calendarRecyclerView.setAdapter(eventAdapter);
-        if (isFirstLoad) {
+        if (!isFirstLoad) {
+            // If a date was previously selected, re-select it if it belongs to the current month
+            if (selectedDate.getMonth() == selectedMonthYearDate.getMonth() &&
+                    selectedDate.getYear() == selectedMonthYearDate.getYear()) {
+                int selectedPosition = selectedDate.getDayOfMonth() - 1;
+                eventAdapter.setSelectedPosition(selectedPosition);
+            }
+        } else {
             // On first load, highlight today's date if it's within the selected month
             LocalDate today = LocalDate.now();
             int todayPosition = -1;
@@ -232,14 +237,6 @@ public class EventListActivity extends AppCompatActivity {
                 eventAdapter.setSelectedPosition(todayPosition);
             }
             isFirstLoad = false;
-        } else {
-            // If a date was previously selected, re-select it if it belongs to the current month
-            if (selectedDate.getMonth() == selectedMonthYearDate.getMonth() &&
-                    selectedDate.getYear() == selectedMonthYearDate.getYear()) {
-                int selectedPosition = selectedDate.getDayOfMonth() - 1;
-                eventAdapter.setSelectedPosition(selectedPosition);
-            }
-
         }
     }
 
@@ -277,13 +274,13 @@ public class EventListActivity extends AppCompatActivity {
         // Set up month picker (1–12, Jan–Dec)
         monthPicker.setMinValue(1);
         monthPicker.setMaxValue(12);
-        monthPicker.setDisplayedValues(new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"});
+        monthPicker.setDisplayedValues(Constants.MONTHS_IN_YEAR);
         monthPicker.setValue(selectedMonthYearDate.getMonthValue());
 
         // Set up year picker (+/-50 years from current year)
         int currentYear = LocalDate.now().getYear();
-        yearPicker.setMinValue(currentYear - 50); // Adjust range as needed
-        yearPicker.setMaxValue(currentYear + 50);
+        yearPicker.setMinValue(currentYear - Constants.YEAR_OFFSET); // Adjust range as needed
+        yearPicker.setMaxValue(currentYear + Constants.YEAR_OFFSET);
         yearPicker.setValue(selectedMonthYearDate.getYear());
 
         // Show the dialog and apply selected month/year on confirmation

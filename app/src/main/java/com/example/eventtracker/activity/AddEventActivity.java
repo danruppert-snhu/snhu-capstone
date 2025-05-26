@@ -24,6 +24,7 @@ import com.example.eventtracker.R;
 import com.example.eventtracker.db.DatabaseHelper;
 import com.example.eventtracker.entity.User;
 import com.example.eventtracker.filter.InputFilterMinMax;
+import com.example.eventtracker.utils.Constants;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -64,7 +65,7 @@ public class AddEventActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_event);
 
         //CS-499: User persistence across a session for various user-driven and user-specific interactions.
-        user = getIntent().getSerializableExtra("user", User.class);
+        user = getIntent().getSerializableExtra(Constants.USER_INTENT_KEY, User.class);
 
         // Initialize database helper
         dbHelper = new DatabaseHelper(this);
@@ -100,7 +101,7 @@ public class AddEventActivity extends AppCompatActivity {
 
         //CS-499: Only allow users to repeat events at most every 999 <intervals>, i.e 999 days
         intervalText.setFilters(new InputFilter[]{
-                new InputFilterMinMax(1, 999)
+                new InputFilterMinMax(Constants.RECURRING_EVENT_MIN_DAYS, Constants.RECURRING_EVENT_MAX_DAYS)
         });
 
 
@@ -202,7 +203,7 @@ public class AddEventActivity extends AppCompatActivity {
         if (result != -1) {
             // If save successful, return to the Event List screen
             Intent intent = new Intent(AddEventActivity.this, EventListActivity.class);
-            intent.putExtra("user", user);
+            intent.putExtra(Constants.USER_INTENT_KEY, user);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
@@ -257,7 +258,7 @@ public class AddEventActivity extends AppCompatActivity {
                     String amPm = (hourOfDay < 12) ? "AM" : "PM";
                     int displayHour = (hourOfDay % 12 == 0) ? 12 : hourOfDay % 12;
 
-                    String timeString = String.format("%02d:%02d %s", displayHour, minuteSelected, amPm);
+                    String timeString = String.format(Constants.TIME_FORMAT, displayHour, minuteSelected, amPm);
                     textView.setText(timeString);
                 }, hour, minute, false); // 'false' means to use the 12-hour format
 

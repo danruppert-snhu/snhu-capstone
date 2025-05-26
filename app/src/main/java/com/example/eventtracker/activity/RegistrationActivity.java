@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.eventtracker.R;
 import com.example.eventtracker.db.DatabaseHelper;
+import com.example.eventtracker.utils.DatabaseConstants;
 import com.example.eventtracker.utils.ErrorUtils;
 import com.example.eventtracker.utils.SecurityUtils;
 
@@ -70,7 +71,7 @@ public class RegistrationActivity extends AppCompatActivity {
         if (!dbHelper.checkPasswordStrength(password)) {
             new AlertDialog.Builder(this)
                     .setTitle("Password Requirements")
-                    .setMessage("Password must be at least 8 characters long and include:\n" +
+                    .setMessage("Password must be at least " + DatabaseConstants.PASSWORD_LENGTH_REQUIREMENT + " characters long and include:\n" +
                             "- An uppercase letter\n" +
                             "- A lowercase letter\n" +
                             "- A digit\n" +

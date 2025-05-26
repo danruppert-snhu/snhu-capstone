@@ -21,12 +21,12 @@ import androidx.core.content.ContextCompat;
 import com.example.eventtracker.R;
 import com.example.eventtracker.db.DatabaseHelper;
 import com.example.eventtracker.entity.User;
+import com.example.eventtracker.utils.Constants;
 import com.example.eventtracker.utils.ErrorUtils;
 import com.example.eventtracker.utils.PhoneUtils;
 
 public class SMSNotificationActivity extends AppCompatActivity {
 
-    private static final int SMS_PERMISSION_CODE = 100;
     private TextView smsPermissionStatus;
     private Button smsRequestButton;
     private EditText phoneNumberInput;
@@ -45,7 +45,7 @@ public class SMSNotificationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sms_notification);
 
         //CS-499 - Software Engineering: persist user
-        user = getIntent().getSerializableExtra("user", User.class);
+        user = getIntent().getSerializableExtra(Constants.USER_INTENT_KEY, User.class);
 
         // Initialize UI components
         smsPermissionStatus = findViewById(R.id.sms_permission_status);
@@ -113,7 +113,7 @@ public class SMSNotificationActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, EventListActivity.class);
-            intent.putExtra("user", user);
+            intent.putExtra(Constants.USER_INTENT_KEY, user);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
@@ -143,7 +143,7 @@ public class SMSNotificationActivity extends AppCompatActivity {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.SEND_SMS)) {
             Toast.makeText(this, "SMS permission is required to send notifications.", Toast.LENGTH_LONG).show();
         }
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, Constants.SMS_PERMISSION_CODE);
     }
 
     /**
@@ -152,7 +152,7 @@ public class SMSNotificationActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == SMS_PERMISSION_CODE) {
+        if (requestCode == Constants.SMS_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 smsPermissionStatus.setText("SMS Permission Status: Granted");
                 smsRequestButton.setText("Send SMS");

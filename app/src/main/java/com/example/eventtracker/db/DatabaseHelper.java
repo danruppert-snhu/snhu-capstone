@@ -17,50 +17,15 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.List;
 
 import com.example.eventtracker.adapter.EventListAdapter;
 import com.example.eventtracker.entity.User;
+import com.example.eventtracker.utils.Constants;
+import com.example.eventtracker.utils.DatabaseConstants;
 import com.example.eventtracker.utils.ErrorUtils;
 import com.example.eventtracker.utils.SecurityUtils;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-
-    private static final String DATABASE_NAME = "event_sync_database";
-    private static final int DATABASE_VERSION = 3;
-
-
-    private static final String TABLE_USERS = "users";
-    private static final String TABLE_EVENTS = "events";
-    //CS-499 - Databases:
-    private static final String TABLE_RECURRENCE_TYPE = "recurrence_types";
-
-    //CS-499 - Databases:
-    private static final String[] TABLES = {TABLE_USERS, TABLE_EVENTS,  TABLE_RECURRENCE_TYPE};
-
-    private static final String COLUMN_USER_ID = "user_id";
-    private static final String COLUMN_USER_NAME = "username";
-    private static final String COLUMN_USER_PASSWORD = "password";
-
-    //CS-499: Support phone number persistence
-    private static final String COLUMN_USER_PHONE = "phone_number";
-
-    private static final String COLUMN_USER_PASSWORD_SALT = "salt";
-
-    private static final String COLUMN_EVENT_ID = "event_id";
-    private static final String COLUMN_EVENT_NAME = "event_name";
-    //Epoch date of event
-    private static final String COLUMN_EVENT_DATE = "event_date";
-    //CS-499 - Databases:
-    private static final String COLUMN_EVENT_END_DATE = "end_date";
-    //CS-499 - Databases:
-    private static final String COLUMN_EVENT_PARENT = "event_parent_key";
-    //CS-499 - Databases:
-    private static final String COLUMN_IS_EVENT_PARENT = "is_recurring_parent";
-    //CS-499 - Databases:
-    private static final String COLUMN_RECURRENCE_TYPE_KEY = "recurrence_type_key";
-    //CS-499 - Databases:
-    private static final String COLUMN_RECURRENCE_TYPE_DESCRIPTION = "description";
     //CS-499 - Software engineering:
     private Context context;
 
@@ -108,7 +73,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Constructor to initialize the SQLiteOpenHelper with database name and version
     public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, DatabaseConstants.DATABASE_NAME, null, DatabaseConstants.DATABASE_VERSION);
         this.context = context;
     }
 
@@ -118,61 +83,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Create users table with unique constraint on username
-        //CS-499 - Databases: Support phone number persistence
-        String createUserTable = "CREATE TABLE " + TABLE_USERS + "("
-                + COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COLUMN_USER_NAME + " TEXT, "
-                + COLUMN_USER_PASSWORD + " TEXT, "
-                + COLUMN_USER_PASSWORD_SALT + " TEXT, "
-                + COLUMN_USER_PHONE + " TEXT, "
-                + "UNIQUE("+COLUMN_USER_NAME+")"
-                + ");";
-
-        // Create events table to store event metadata and datetime
-        //CS-499 - Databases: Added support for user-specific event support
-        //CS-499 - Databases: Added support for recurring events.
-        String createDataTable = "CREATE TABLE " + TABLE_EVENTS + " ("
-                + COLUMN_EVENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COLUMN_USER_ID + " INTEGER, "
-                + COLUMN_EVENT_NAME + " TEXT, "
-                + COLUMN_EVENT_DATE + " INTEGER, "
-                + COLUMN_RECURRENCE_TYPE_KEY + " INTEGER, "
-                + COLUMN_EVENT_END_DATE + " INTEGER, "
-                + COLUMN_EVENT_PARENT + " INTEGER, "
-                + COLUMN_IS_EVENT_PARENT + " INTEGER DEFAULT 0, "
-                + "FOREIGN KEY(" + COLUMN_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + COLUMN_USER_ID + "),"
-                + "FOREIGN KEY (" + COLUMN_EVENT_PARENT + ") REFERENCES " + TABLE_EVENTS + "(" + COLUMN_EVENT_ID + ")"
-                + ")";
-        //CS-499 - Databases:
-        String createRecurrenceTypeTable = "CREATE TABLE " + TABLE_RECURRENCE_TYPE + " ("
-                + COLUMN_RECURRENCE_TYPE_KEY + " INTEGER PRIMARY KEY, "
-                + COLUMN_RECURRENCE_TYPE_DESCRIPTION + " TEXT"
-                + ")";
         //CS-499 - Databases
-        String indexUsername = "CREATE INDEX idx_username ON " + TABLE_USERS + " (" + COLUMN_USER_NAME + ");";
-        String indexEventUserId = "CREATE INDEX idx_event_user_id ON " + TABLE_EVENTS + " (" + COLUMN_USER_ID + ");";
-        String indexEventName = "CREATE INDEX idx_event_name ON " + TABLE_EVENTS + " (" + COLUMN_EVENT_NAME + ");";
-        String indexEventDate = "CREATE INDEX idx_event_date ON " + TABLE_EVENTS + " (" + COLUMN_EVENT_DATE + ");";
-
-        //CS-499 - Databases
-        db.execSQL(createUserTable);
-        db.execSQL(createDataTable);
-        db.execSQL(createRecurrenceTypeTable);
-        db.execSQL(indexUsername);
-        db.execSQL(indexEventName);
-        db.execSQL(indexEventDate);
-        db.execSQL(indexEventUserId);
+        createTables(db);
+        createIndexes(db);
         populateRecurrenceTypes(db);
+    }
+
+    private void createTables(SQLiteDatabase db) {
+        for (String query : DatabaseConstants.CREATE_TABLE_STATEMENTS) {
+            db.execSQL(query);
+        }
+    }
+    private void createIndexes(SQLiteDatabase db) {
+        for (String query : DatabaseConstants.CREATE_IDX_STATEMENTS) {
+            db.execSQL(query);
+        }
     }
 
     //CS-499 - Databases
     private void populateRecurrenceTypes(SQLiteDatabase db) {
         for (RecurrenceType type : RecurrenceType.values()) {
             ContentValues values = new ContentValues();
-            values.put(COLUMN_RECURRENCE_TYPE_KEY, type.getRecurrenceTypeId());
-            values.put(COLUMN_RECURRENCE_TYPE_DESCRIPTION, type.getDbValue());
-            db.insert(TABLE_RECURRENCE_TYPE, null, values);
+            values.put(DatabaseConstants.COLUMN_RECURRENCE_TYPE_KEY, type.getRecurrenceTypeId());
+            values.put(DatabaseConstants.COLUMN_RECURRENCE_TYPE_DESCRIPTION, type.getDbValue());
+            db.insert(DatabaseConstants.TABLE_RECURRENCE_TYPE, null, values);
         }
     }
 
@@ -190,7 +124,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * CS-499 - Databases
      */
     private void dropTables(SQLiteDatabase db) {
-        for (String table : TABLES) {
+        for (String table : DatabaseConstants.TABLES) {
             db.execSQL("DROP TABLE IF EXISTS " + table);
         }
     }
@@ -202,10 +136,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public boolean addUser(String username, String passwordHash, String salt) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues userValues = new ContentValues();
-        userValues.put(COLUMN_USER_NAME, username);
-        userValues.put(COLUMN_USER_PASSWORD, passwordHash);
-        userValues.put(COLUMN_USER_PASSWORD_SALT, salt);
-        long result = db.insert(TABLE_USERS, null,userValues);
+        userValues.put(DatabaseConstants.COLUMN_USER_NAME, username);
+        userValues.put(DatabaseConstants.COLUMN_USER_PASSWORD, passwordHash);
+        userValues.put(DatabaseConstants.COLUMN_USER_PASSWORD_SALT, salt);
+        long result = db.insert(DatabaseConstants.TABLE_USERS, null,userValues);
         db.close();
         return result != -1;
     }
@@ -217,12 +151,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         boolean userExists = false;
         SQLiteDatabase db = this.getReadableDatabase();
         //CS-499: Using parameterized query to avoid SQL injection
-        String query = "SELECT "
-                + COLUMN_USER_ID + ", "
-                + COLUMN_USER_NAME + " "
-                + "FROM users "
-                + "WHERE username = ?";
-        try (Cursor cursor = db.rawQuery(query, new String[]{username})) {
+        try (Cursor cursor = db.rawQuery(DatabaseConstants.USER_LOOKUP_ID_USERNAME_BY_USERNAME, new String[]{username})) {
             userExists = cursor.getCount() > 0;
         } finally {
             db.close();
@@ -234,7 +163,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * Validates password strength based on character types and minimum length.
      */
     public boolean checkPasswordStrength(String password) {
-        if (password == null || password.length() < 8) {
+        if (password == null || password.length() < DatabaseConstants.PASSWORD_LENGTH_REQUIREMENT) {
             return false;
         }
 
@@ -271,22 +200,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         try {
-            String query = "SELECT "
-                    + COLUMN_USER_ID + ", "
-                    + COLUMN_USER_PASSWORD + ", "
-                    + COLUMN_USER_PASSWORD_SALT +
-                    " FROM " + TABLE_USERS +
-                    " WHERE " + COLUMN_USER_NAME + " = ?";
 
             // CS-499: Use parameterized query to prevent SQL injection
-            try (Cursor cursor = db.rawQuery(query, new String[]{username})) {
+            try (Cursor cursor = db.rawQuery(DatabaseConstants.USER_AUTH_QUERY, new String[]{username})) {
                 if (cursor.moveToFirst()) {
-                    String storedHash = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_PASSWORD));
-                    String storedSalt = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_PASSWORD_SALT));
+                    String storedHash = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_USER_PASSWORD));
+                    String storedSalt = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_USER_PASSWORD_SALT));
                     String providedHash = SecurityUtils.hashPassword(password, storedSalt);
 
                     if (providedHash.equals(storedHash)) {
-                        userId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_ID));
+                        userId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_USER_ID));
                     }
                 }
             }
@@ -308,16 +231,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         // CS-499: Add the user ID to associate the event with its owner
-        values.put(COLUMN_USER_ID, user.getUserId());
-        values.put(COLUMN_EVENT_NAME, eventName);
+        values.put(DatabaseConstants.COLUMN_USER_ID, user.getUserId());
+        values.put(DatabaseConstants.COLUMN_EVENT_NAME, eventName);
 
         // Combine date and time, convert to epoch seconds using local time zone offset
         LocalDateTime eventDateTime = LocalDateTime.of(eventDate, eventTime);
         long eventDateEpoch = eventDateTime.toEpochSecond(ZoneOffset.systemDefault().getRules().getOffset(eventDateTime));
 
-        values.put(COLUMN_EVENT_DATE, eventDateEpoch);
+        values.put(DatabaseConstants.COLUMN_EVENT_DATE, eventDateEpoch);
 
-        long result = db.insert(TABLE_EVENTS, null, values);
+        long result = db.insert(DatabaseConstants.TABLE_EVENTS, null, values);
         db.close();
         return result;
     }
@@ -356,19 +279,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     );
 
                     ContentValues values = new ContentValues();
-                    values.put(COLUMN_USER_ID, user.getUserId());
-                    values.put(COLUMN_EVENT_NAME, eventName);
-                    values.put(COLUMN_EVENT_DATE, epoch);
-                    values.put(COLUMN_RECURRENCE_TYPE_KEY, recurrenceType.getRecurrenceTypeId());
+                    values.put(DatabaseConstants.COLUMN_USER_ID, user.getUserId());
+                    values.put(DatabaseConstants.COLUMN_EVENT_NAME, eventName);
+                    values.put(DatabaseConstants.COLUMN_EVENT_DATE, epoch);
+                    values.put(DatabaseConstants.COLUMN_RECURRENCE_TYPE_KEY, recurrenceType.getRecurrenceTypeId());
                     if (parentKey > -1) {
-                        values.put(COLUMN_EVENT_PARENT, parentKey);
+                        values.put(DatabaseConstants.COLUMN_EVENT_PARENT, parentKey);
                     } else {
-                        values.put(COLUMN_IS_EVENT_PARENT, 1);
+                        values.put(DatabaseConstants.COLUMN_IS_EVENT_PARENT, 1);
                     }
                     if (occurenceCount == 0) {
-                        parentKey = db.insert(TABLE_EVENTS, null, values);
+                        parentKey = db.insert(DatabaseConstants.TABLE_EVENTS, null, values);
                         rowsInserted += (parentKey > 0 ? 1 : 0);
-                    } else if (db.insert(TABLE_EVENTS, null, values) >= 0) {
+                    } else if (db.insert(DatabaseConstants.TABLE_EVENTS, null, values) >= 0) {
                         rowsInserted++;
                     }
                 }
@@ -403,7 +326,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (endDate != null) {
             endDateTime = LocalDateTime.of(endDate, eventTime);
         } else {
-            endDateTime = LocalDateTime.of(LocalDate.now().plusYears(50), eventTime);
+            endDateTime = LocalDateTime.of(LocalDate.now().plusYears(Constants.YEAR_OFFSET), eventTime);
         }
         if (endDateTime.isBefore(startDateTime)) {
             Toast.makeText(context, "Start date can not be after end date.", Toast.LENGTH_SHORT).show();
@@ -463,7 +386,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         LocalDateTime dateTime = Instant.ofEpochSecond(epochSeconds)
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, hh:mm a");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.EVENT_TIMESTAMP_PATTERN);
         return dateTime.format(formatter);
     }
 
@@ -478,20 +401,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
 
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT " + COLUMN_EVENT_ID + ", " + COLUMN_EVENT_NAME + ", " + COLUMN_EVENT_DATE + ", " + COLUMN_EVENT_PARENT + ", " + COLUMN_IS_EVENT_PARENT + " FROM " + TABLE_EVENTS +
-                " WHERE " + COLUMN_USER_ID + " = ? AND " + COLUMN_EVENT_DATE + " >= ? AND " + COLUMN_EVENT_DATE + " < ?";
         String[] args = {String.valueOf(user.getUserId()), String.valueOf(startOfDay), String.valueOf(endOfDay)};
 
-        try (Cursor cursor = db.rawQuery(query, args)) {
+        try (Cursor cursor = db.rawQuery(DatabaseConstants.LOOKUP_EVENTS_FOR_DATE_QUERY, args)) {
             while (cursor.moveToNext()) {
                 //CS-499 - Databases
-                String eventName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EVENT_NAME));
-                long eventEpoch = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_EVENT_DATE));
+                String eventName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_EVENT_NAME));
+                long eventEpoch = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_EVENT_DATE));
                 String formattedDate = formatEventTimestamp(eventEpoch);
-                long eventId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_EVENT_ID));
-                int parentIndex = cursor.getColumnIndexOrThrow(COLUMN_EVENT_PARENT);
+                long eventId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_EVENT_ID));
+                int parentIndex = cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_EVENT_PARENT);
                 long eventParentId = cursor.isNull(parentIndex) ? -1 : cursor.getLong(parentIndex);
-                boolean isParent = (cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_EVENT_PARENT)) == 1);
+                boolean isParent = (cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_IS_EVENT_PARENT)) == 1);
 
                 events.add(new EventListAdapter.EventData(user.getUserId(), eventName, formattedDate, eventId, eventEpoch, eventParentId, isParent));
             }
@@ -516,7 +437,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public boolean deleteEvent(User user, long eventId) {
         SQLiteDatabase db = this.getWritableDatabase();
         //CS-499: Using parameterized query to avoid SQL injection
-        int rowsDeleted = db.delete(TABLE_EVENTS, COLUMN_USER_ID + " = ? AND " + COLUMN_EVENT_ID + " = ?", new String[]{String.valueOf(user.getUserId()), String.valueOf(eventId)});
+        int rowsDeleted = db.delete(DatabaseConstants.TABLE_EVENTS, DatabaseConstants.COLUMN_USER_ID + " = ? AND " + DatabaseConstants.COLUMN_EVENT_ID + " = ?", new String[]{String.valueOf(user.getUserId()), String.valueOf(eventId)});
         db.close();
         return rowsDeleted > 0;
     }
@@ -528,10 +449,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int userId = user.getUserId();
         String phoneNumber = "";
 
-        String query = "SELECT " + COLUMN_USER_PHONE + " FROM " + TABLE_USERS + " WHERE " + COLUMN_USER_ID + " = ?";
-        try (Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)})) {
+        try (Cursor cursor = db.rawQuery(DatabaseConstants.LOOKUP_PHONE_NUMBER_QUERY, new String[]{String.valueOf(userId)})) {
             if (cursor.moveToFirst()) {
-                phoneNumber = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_PHONE));
+                phoneNumber = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_USER_PHONE));
                 if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
                     user.setPhoneNumber(phoneNumber);
                 }
@@ -566,8 +486,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             if (currentPhone == null || currentPhone.trim().isEmpty() || !currentPhone.equals(newPhoneNumber)) {
                 ContentValues values = new ContentValues();
-                values.put(COLUMN_USER_PHONE, newPhoneNumber);
-                int rows = db.update(TABLE_USERS, values, COLUMN_USER_ID + " = ?", new String[]{String.valueOf(userId)});
+                values.put(DatabaseConstants.COLUMN_USER_PHONE, newPhoneNumber);
+                int rows = db.update(DatabaseConstants.TABLE_USERS, values, DatabaseConstants.COLUMN_USER_ID + " = ?", new String[]{String.valueOf(userId)});
                 updated = rows > 0;
                 user.setPhoneNumber(newPhoneNumber);
             }
@@ -585,7 +505,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //CS-499 - algorithms
     public boolean deleteEventSeries(long parentId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        int deleted = db.delete(TABLE_EVENTS, COLUMN_EVENT_PARENT + " = ? OR " + COLUMN_EVENT_ID + " = ?", new String[]{
+        int deleted = db.delete(DatabaseConstants.TABLE_EVENTS, DatabaseConstants.COLUMN_EVENT_PARENT + " = ? OR " + DatabaseConstants.COLUMN_EVENT_ID + " = ?", new String[]{
                 String.valueOf(parentId), String.valueOf(parentId)
         });
         db.close();
@@ -598,10 +518,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long now = Instant.now().getEpochSecond();
 
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT " + COLUMN_EVENT_ID + ", " + COLUMN_EVENT_NAME + ", " + COLUMN_EVENT_DATE + ", " + COLUMN_EVENT_PARENT + ", " + COLUMN_IS_EVENT_PARENT +
-                " FROM " + TABLE_EVENTS +
-                " WHERE " + COLUMN_USER_ID + " = ? AND " + COLUMN_EVENT_DATE + " >= ?" +
-                " ORDER BY " + COLUMN_EVENT_DATE + " ASC LIMIT ?";
 
         String[] args = {
                 String.valueOf(user.getUserId()),
@@ -609,15 +525,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 String.valueOf(limit)
         };
 
-        try (Cursor cursor = db.rawQuery(query, args)) {
+        try (Cursor cursor = db.rawQuery(DatabaseConstants.LOOKUP_UPCOMING_EVENTS_QUERY, args)) {
             while (cursor.moveToNext()) {
-                String eventName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EVENT_NAME));
-                long eventEpoch = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_EVENT_DATE));
+                String eventName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_EVENT_NAME));
+                long eventEpoch = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_EVENT_DATE));
                 String formattedDate = formatEventTimestamp(eventEpoch);
-                long eventId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_EVENT_ID));
-                int parentIndex = cursor.getColumnIndexOrThrow(COLUMN_EVENT_PARENT);
+                long eventId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_EVENT_ID));
+                int parentIndex = cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_EVENT_PARENT);
                 long eventParentId = cursor.isNull(parentIndex) ? -1 : cursor.getLong(parentIndex);
-                boolean isParent = (cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_EVENT_PARENT)) == 1);
+                boolean isParent = (cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseConstants.COLUMN_IS_EVENT_PARENT)) == 1);
 
                 upcomingEvents.add(new EventListAdapter.EventData(user.getUserId(), eventName, formattedDate, eventId, eventEpoch, eventParentId, isParent));
             }
