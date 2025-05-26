@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventtracker.R;
+import com.example.eventtracker.entity.User;
 
 import java.util.ArrayList;
 
@@ -19,17 +20,26 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private OnDaySelectedListener listener;
 
     private int selectedPosition = RecyclerView.NO_POSITION;
+    private User user;
 
+
+    private EventAdapter() {}
 
     /**
-     @param dateList - list of dates to present in the calendar
-     @param listener - listener function to invoke when the calendar item is clicked.
+     * Constructs an EventAdapter with a list of days and a listener for selection.
+     *
+     * @param dateList - list of dates to present in the calendar
+     * @param listener - listener function to invoke when the calendar item is clicked.
      */
-    public EventAdapter(ArrayList<String> dateList, OnDaySelectedListener listener) {
+    public EventAdapter(User user, ArrayList<String> dateList, OnDaySelectedListener listener) {
+        this.user = user;
         this.dateList = dateList;
         this.listener = listener;
     }
 
+    /**
+     * Updates the currently selected calendar day and refreshes the visual state.
+     */
     public void setSelectedPosition(int position) {
         int previousPosition = selectedPosition;
         selectedPosition = position;
@@ -37,6 +47,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         notifyItemChanged(selectedPosition);
     }
 
+    /**
+     * Inflates the layout for a calendar day cell.
+     */
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -44,9 +57,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         return new EventViewHolder(view);
     }
 
+    /**
+     * Binds the day value to the view and applies selection highlighting.
+     */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         String day = dateList.get(position);
+        // Set the text to the day number
         holder.eventTextView.setText(day);
 
         if (position == selectedPosition) {
@@ -56,17 +73,26 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         }
 
-        holder.itemView.setOnClickListener(v -> {
-            setSelectedPosition(holder.getAdapterPosition());
-            listener.onDaySelected(day);
-        });
+        // Set up the click listener to update selection and notify parent
+        holder.itemView.setOnClickListener(v -> handleDaySelection(holder, day));
     }
 
+    private void handleDaySelection(EventViewHolder holder, String day) {
+        setSelectedPosition(holder.getAdapterPosition());
+        listener.onDaySelected(day);
+    }
+
+    /**
+     * Returns the number of days in the list.
+     */
     @Override
     public int getItemCount() {
         return dateList.size();
     }
 
+    /**
+     * ViewHolder class for a single calendar day cell.
+     */
     public static class EventViewHolder extends RecyclerView.ViewHolder {
         TextView eventTextView;
 
@@ -76,6 +102,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
     }
 
+    /**
+     * Interface for notifying when a calendar day is selected.
+     */
     public interface OnDaySelectedListener {
         void onDaySelected(String day);
     }

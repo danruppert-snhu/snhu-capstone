@@ -17,6 +17,7 @@
     app:layout_constraintEnd_toStartOf="@id/month_year_text"
     android:layout_marginEnd="8dp"/>
 
+
     <TextView
         android:id="@+id/month_year_text"
         android:layout_width="wrap_content"
@@ -73,5 +74,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:padding="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/calendar_recycler_view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ToggleButton
+            android:id="@+id/toggle_event_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textOff="Upcoming Events"
+            android:textOn="Selected Day"
+            android:checked="false"
+            android:textColor="@android:color/black"/>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
