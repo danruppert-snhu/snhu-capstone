@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Data Structures and Algorithms
+title: Databases
 nav_order: 2
 ---
 
