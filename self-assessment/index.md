@@ -3,16 +3,17 @@ layout: default
 title: Self Assessment
 nav_order: 2
 ---
-<p align="center">
-  <a href="/index.md">Home</a> |
-  <a href="/code-review/index.md">Code Review</a> |
-  <a href="/enhancements/software-engineering/index.md">Software Engineering</a> |
-  <a href="/enhancements/data-structures-algorithms/index.md">Algorithms</a> |
-  <a href="/enhancements/databases/index.md">Databases</a> |
-  <a href="/artifacts/index.md">Artifacts</a> |
-  <a href="/self-assessment/index.md">Self-Assessment</a>
-</p>
+<div style="text-align: center; white-space: nowrap; font-size: 16px; margin-bottom: 10px;">
+  <a href="/snhu-capstone/index.md">Home</a> |
+  <a href="/snhu-capstone/code-review/index.md">Code Review</a> |
+  <a href="/snhu-capstone/enhancements/software-engineering/index.md">Software Engineering</a> |
+  <a href="/snhu-capstone/enhancements/data-structures-algorithms/index.md">Algorithms</a> |
+  <a href="/snhu-capstone/enhancements/databases/index.md">Databases</a> |
+  <a href="/snhu-capstone/artifacts/index.md">Artifacts</a> |
+  <a href="/snhu-capstone/self-assessment/index.md">Self-Assessment</a>
+</div>
 <hr>
+
 # Professional Self-Assessment
 
 Throughout my academic journey in the Computer Science program, the capstone experience and the development of my ePortfolio served not only as a culminating project but also as a meaningful opportunity to showcase the full range of my professional strengths. The structure of the capstone course, with its emphasis on reviewing, enhancing, and reflecting on prior work, enabled me to intentionally integrate software engineering principles, algorithmic reasoning, and database design into a cohesive and demonstrable body of work. The ePortfolio highlights not just completed assignments, but a record of measurable growth, technical mastery, and architectural decision-making grounded in practical development scenarios.

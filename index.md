@@ -1,12 +1,12 @@
-<p align="center">
-  <a href="/index.md">Home</a> |
-  <a href="/code-review/index.md">Code Review</a> |
-  <a href="/enhancements/software-engineering/index.md">Software Engineering</a> |
-  <a href="/enhancements/data-structures-algorithms/index.md">Algorithms</a> |
-  <a href="/enhancements/databases/index.md">Databases</a> |
-  <a href="/artifacts/index.md">Artifacts</a> |
-  <a href="/self-assessment/index.md">Self-Assessment</a>
-</p>
+<div style="text-align: center; white-space: nowrap; font-size: 16px; margin-bottom: 10px;">
+  <a href="/snhu-capstone/index.md">Home</a> |
+  <a href="/snhu-capstone/code-review/index.md">Code Review</a> |
+  <a href="/snhu-capstone/enhancements/software-engineering/index.md">Software Engineering</a> |
+  <a href="/snhu-capstone/enhancements/data-structures-algorithms/index.md">Algorithms</a> |
+  <a href="/snhu-capstone/enhancements/databases/index.md">Databases</a> |
+  <a href="/snhu-capstone/artifacts/index.md">Artifacts</a> |
+  <a href="/snhu-capstone/self-assessment/index.md">Self-Assessment</a>
+</div>
 <hr>
 
 # Welcome to My Computer Science Capstone Portfolio
